@@ -1,4 +1,3 @@
-from calendar import calendar
 from fastmcp import FastMCP
 from pathlib import Path
 import json
@@ -24,7 +23,7 @@ def multiply(a: float, b: float) -> float:
     return a * b
 
 @mcp.tool()
-def get_calendar_events():
+def get_calendar_events(a, b):
     """
     Get event in schedule
     """

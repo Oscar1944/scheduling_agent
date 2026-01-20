@@ -1,0 +1,6 @@
+HOLIDAY:
+  API_KEY: "4488dd681b814d0eb554690c40b7622e"
+
+LLM:
+  API_KEY: "AIzaSyAoBru-W4QfK_f9XJvpKwwRYFnsEIktsl8"
+  MODEL: "gemini-3-flash-preview"
