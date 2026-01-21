@@ -1,5 +1,14 @@
 from google import genai
 
+def getToday():
+    """
+    Get datetime of today
+    Return (str): Datetime of today
+    """
+    # Simulation datetime
+    return "2026/1/19"
+
+
 def guardrails():
     """
     Verify if the LLM resopnse contains content that violate AI governance
@@ -25,5 +34,6 @@ class LLM:
             )
             return response.text
         except:
+            print(response.text)
             raise ValueError("Error in LLM response generation")
 

@@ -19,26 +19,28 @@ def save_calendar(calendar: dict):
 
 @mcp.tool
 def multiply(a: float, b: float) -> float:
-    """Multiplies two numbers."""
+    """Multiplies two numbers by giving 2 real numbers a and b.
+       Return (float): the product of multiplication
+    """
     return a * b
 
-@mcp.tool()
-def get_calendar_events(a, b):
+# @mcp.tool()
+def get_calendar_events():
     """
-    Get event in schedule
+    Get all of events in schedule.
     """
     return load_calendar()
 
-@mcp.tool()
+# @mcp.tool()
 def add_calendar_event(event: dict):
     """
-    Add events into schedule
+    Add new events into schedule
     """
     calendar = get_calendar_events()
     calendar.append(event)
     save_calendar()
 
-@mcp.tool()
+# @mcp.tool()
 def delete_calendar_event(event_id: str):
     """
     Delete events in schedule
