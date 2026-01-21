@@ -26,8 +26,7 @@ class LLM:
         Send a message to LLM
         Return (str): LLM response
         """
-        # The client gets the API key from the environment variable `GEMINI_API_KEY`.
-        # client = genai.Client(api_key="AIzaSyAoBru-W4QfK_f9XJvpKwwRYFnsEIktsl8")
+        # The client gets the API key from the environment variable `GEMINI_API_KEY` as default.
         try:
             response = self.client.models.generate_content(
                 model=self.MODEL, contents=message
