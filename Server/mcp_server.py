@@ -5,7 +5,7 @@ import json
 # Create a server instance
 mcp = FastMCP(name="MCPServer")
 
-CALENDAR_FILE = Path("./data/calendar.json")
+CALENDAR_FILE = Path("../data/calendar.json")
 
 def load_calendar():
     if not CALENDAR_FILE.exists():
@@ -19,35 +19,42 @@ def save_calendar(calendar: dict):
 
 @mcp.tool
 def multiply(a: float, b: float) -> float:
-    """Multiplies two numbers by giving 2 real numbers a and b.
-       Return (float): the product of multiplication
+    """
+    Multiplies two numbers by giving 2 real numbers a and b.
+    Return (float): the product of multiplication
     """
     return a * b
 
-# @mcp.tool()
+@mcp.tool()
 def get_calendar_events():
     """
-    Get all of events in schedule.
+    Get all of events & date that have been scheduled in calendar.
+    Return (str): All of Events in Calendar formated in JSON
     """
-    return load_calendar()
+    return json.dumps(load_calendar(), ensure_ascii=False, indent=4)
+    return "Get all Calendar events"
 
 # @mcp.tool()
 def add_calendar_event(event: dict):
     """
-    Add new events into schedule
+    Add a new events into calendar.
+    Return (str): A string to reply it is done.
     """
-    calendar = get_calendar_events()
-    calendar.append(event)
-    save_calendar()
+    # calendar = get_calendar_events()
+    # calendar.append(event)
+    # save_calendar()
+    return "Add NEW EVENT Done"
 
 # @mcp.tool()
 def delete_calendar_event(event_id: str):
     """
-    Delete events in schedule
+    Delete an events in calendar.
+    Return (str): A string to reply it is done.
     """
-    calendar = get_calendar_events()
-    calendar = [e for e in calendar if e["某條件"] != "某條件"]
-    save_calendar()
+    # calendar = get_calendar_events()
+    # calendar = [e for e in calendar if e["某條件"] != "某條件"]
+    # save_calendar()
+    return "Delete an EVENT DONE"
 
 if __name__=="__main__":
     # 啟動 server

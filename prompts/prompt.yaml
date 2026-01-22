@@ -1,3 +1,37 @@
+ROUTER: 
+  SCHEDULING: 
+    PROMPT_1: |
+      ## Task
+        You are a helpful assistant. You will be given a message.
+        You need to check the content, and decide if it is about scheduling (check/add/revise/delete) an event
+        Reply 'Yes' if the message is about arranging or acheduling an event, otherwise, reply 'No'.
+        
+      ## EXAMPLE:
+        Message: ['Sender': Jack, 'Title': Party Invitation, 'Content': Please come to join the party at 2/15]  Your Response: 'Yes'
+        Message: [Tell me all the events currently recorded]  Your Response: 'Yes'
+        Message: [Change the meeting from 2/10 to 3/5]  Your Response: 'Yes'
+        Message: [Hurry, Don't be late to the meeting]  Your Response: 'No'
+      
+      ## Message
+      Message: {message}
+      Your Response: 
+  IS_MAIL:
+    PROMPT_1: |
+      ## Task
+          You are a helpful assistant. You will be given a message.
+          You need to check the content and format to decide if it is an Email message
+          Reply 'Yes' if the message is an Email, otherwise, reply 'No'.
+
+      ## EXAMPLE:
+        Message: ['Sender': Jack, 'Title': Party Invitation, 'Content': Please come to join the party at 2/15]  Your Response: 'Yes'
+        Message: ['Sender': linda@cs123, 'Title': Meeting, 'Content': The meeting has been changed to 14:00 pm]  Your Response: 'Yes'
+        Message: [Tell me all the events currently recorded]  Your Response: 'No'
+        Message: [What is overfitting?]  Your Response: 'No'
+      
+      ## Message
+      Message: {message}
+      Your Response: 
+
 PLANNING:
   PROMPT_1: |
     Today: {today_datetime}
@@ -50,7 +84,6 @@ PLANNING:
           Content: We must change our investment objectives. Let's hold a meeting tomorrow. When would you be available ?
       Your Anwer:
           {'Task': 'email', 'Response':[{'Type':'Emergency', 'Score':5}]}
-
   PROMPT_2: |
     ## Role
     You are a helpful assistant. You will be given a message and You have 3 tasks
@@ -108,6 +141,35 @@ PLANNING:
         EX: {{'Thought':'#Done#'}}
       - When arranging an event, you must check if the date is available first. If the date is not available, you must reply 'Date Unavailable'.
 
+EMAIL_PRIORITY:
+  PROMPT_1: |
+    ## Task
+        You are a helpful assistant. You will be given an email message.
+        1. Your objectives is to classify emails into one of the following types based on 'Sender', 'Subject', 'Content'
+        2. each of email should be prioritized with a score from 1 to 5 based on Sender and Content, indicating less-important to highly-important, respectively.
+
+    ## Email Types & Scoring Rules
+      [Types]
+      - Emergency:  It is about business or dangerous, and it must be replied in a short time.
+      - Normal: It is about a normal, chill conversation.
+      - Pricing: It is about a conversation about pricing.
+      - Meeting:  It is about scheduling a meeting.
+      - Trash:  It is none of the above types.
+
+      [Scoring Rules]
+      Score email based on context and sender, score range 1 to 5 (less-important to highly-important)
+
+    ## EXAMPLE:
+      Input Email:  
+          Sender: CEO
+          Content: We must change our investment objectives. Let's hold a meeting tomorrow. When would you be available ?
+      Your Anwer:
+          {'Type':'Emergency', 'Score':5}
+
+    ## Email Message
+      Message: {message}
+      Your Response: 
+
 FINAL_ANS:
   PROMPT_1: |
     ## Role
@@ -126,14 +188,24 @@ FINAL_ANS:
     If all of the action have been completed, tell me what job and 'it is Done.'
 
   PROMPT_TEST: |
-    ## Role
-    You are a helpful assistant. Answer the question in Message based on everything you know
-    The Current Status provide the thinking steps and thinking results.
-    #Done# indicate the END point of thinking chain.
-    You have to answer the question in Message by taking information from Current Status & your basic knowledge. 
+    ## Task
+    You are a helpful assistant. Answer the question in Message based on everything you know.
+    Some reference have been provided below.
+
+    ## Reference
+    1. Reasoning: This provide the thinking steps and thinking results, it could be reference to your answer.
+        Thought: indicate thinking step.
+        Action: indicate tool has been used.
+        Observation: indicate result of using a tool.
+        #Done#: indicate the END point of thinking chain, ignore it. 
+    2. Priority: This shows the types and score of importance of a given message.
+
+    #Note: If the 'Reasoning' or 'Priority' is not empty, it must be describe in final response.
 
     ## Context
-    Message: {message}
     Today: {today_datetime}
-    Current Status: {cur_status}
+    Reasoning: {reasoning}
+    Priority: {priority}
+    Message: {message}
+    
   

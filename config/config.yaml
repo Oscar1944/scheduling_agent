@@ -2,6 +2,9 @@ HOLIDAY:
   API_KEY: "42e"
 
 LLM:
-  API_KEY: ""
+  API_KEY: "XX"
   # MODEL: "gemini-3-flash-preview"
-  MODEL: "gemini-2.5-flash"
+  # MODEL: "gemini-2.5-flash"
+  MODEL: "gemini-2.5-flash-lite"
+  # MODEL: "gemini-2.0-flash"
+  # MODEL: "gemini-2.0-flash-lite"
