@@ -121,6 +121,11 @@ PLANNING:
       You are a helpful assistant. And you have to answer the given question as you can.
       Some of question may need to use tools, some may not need it.
 
+    ## Task
+      - When scheduling an event (create/delete/revise), you MUST check the calendar first, and get event information.
+      - If the date is not available after you check the calendar, you must reply 'Date Unavailable' as your final answer.
+      - If the date is available after you check the calendar, you can do the next step (create/delete/revise).
+
     ## Context
       Message: {message}
       Today: {today_datetime}
@@ -132,14 +137,14 @@ PLANNING:
 
     ## Constraint
       - You can do only one step at a time.
-      - If tool return error, please return to step 1. and re-thinking the solution.
+      - If tool return error, please return 'Tool Error during Planning' as your final answer.
+      - Always format the date with format 'YYYY-MM-DD', some cases you may need datetime.
       - Your output should be like one of the following example, each of example could be your output at a time, and Cuttrent Status will collect them
         EX: {{'Thought':'I have to answer the name of R10 MRT station and i have to answer it.'}}
         EX: {{'Thought':'I have to apply Tool-1 to answer it with parameters id=10, Line=R.'}}
         EX: {{'Action':'Tool-1', 'param':{{'id':10, 'Line':'R'}}}}  # if no parameter needed, return param:{{}}
         EX: {{[Observation] Calling Tool-1 with param {{'id':10, 'Line':'R'}}, Got result {{'Taipei Station'}}}}
         EX: {{'Thought':'#Done#'}}
-      - When arranging an event, you must check if the date is available first. If the date is not available, you must reply 'Date Unavailable'.
 
 EMAIL_PRIORITY:
   PROMPT_1: |
@@ -163,8 +168,7 @@ EMAIL_PRIORITY:
       Input Email:  
           Sender: CEO
           Content: We must change our investment objectives. Let's hold a meeting tomorrow. When would you be available ?
-      Your Anwer:
-          {'Type':'Emergency', 'Score':5}
+      Your Anwer: {{'Type':'Emergency', 'Score':5}}
 
     ## Email Message
       Message: {message}

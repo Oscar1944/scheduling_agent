@@ -4,33 +4,47 @@ from fastmcp.client import Client
 import yaml
 import ast
 import asyncio
+import os
 
 global prompt
 with open("./prompts/prompt.yaml", "r", encoding="utf-8") as f:
     prompt = yaml.safe_load(f)
 
 class Agent:
-    def __init__(self, API_KEY, MODEL):
+    def __init__(self, API_KEY, MODEL, LOG_PATH):
         self.memory = []
         self.llm = LLM(API_KEY, MODEL)
-        self.objective = ""
+        self.log = LOG_PATH
+
+        # Create an agent log
+        if not os.path.exists(self.log):
+            ValueError("Log path not exist.")
+        else:
+            self.log = os.path.join(self.log, 'agent_log.txt')
+        with open(self.log, 'w', encoding='utf-8') as f:
+            pass
+
 
     def chat(self, message):
         """
         Send message to Agent
         """
-        print("********* <thinking> *********")
-        # Information
+        _tag = "********* <thinking> *********"
+        self._log(_tag)
+
+        # Initialize
         reasoning_process = ""
-        email_priprity = ""
+        email_priority = ""
         today = getToday()
 
         # Router Scheeduling
-        print("<Logic Framework> Is about Events ?")
+        _tag = "<Logic Framework> Is about Events ?"
+        self._log(_tag)
         sys_prompt = prompt["ROUTER"]["SCHEDULING"]["PROMPT_1"]
         router_res = self.router(sys_prompt, message)
         if router_res=='yes':
-            print("********* <planning> *********")
+            _tag = "********* <planning> *********"
+            self._log(_tag)
             # Scheduling process
             tool_list = asyncio.run(self.list_tools())
             cur_status = []
@@ -50,7 +64,7 @@ class Agent:
                 )
                 # print(instruction)
                 res = self.llm.chat(instruction)
-                print(res)
+                self._log(res)
 
                 if res:
                     if "#Done#".lower() in res.lower():  # Planning Done
@@ -63,26 +77,31 @@ class Agent:
                             tool_result = asyncio.run(self.call_tool(step["Action"], param=step["param"]))
                             observation = str(f"[Observation] Calling {step['Action']} with param {step['param']}, Got result {tool_result}")
                             cur_status.append(observation)
-                            print(observation)
+                            self._log(observation)
                         elif "Thought" in step.keys():   # Thinking
                             cur_status.append(str(step["Thought"]))
-                            print(str(step["Thought"]))
+                            self._log(str(step["Thought"]))
                         else:
+                            self._log("ValueError('LLM Planning Unknown step')")
                             raise ValueError("LLM Planning Unknown step")
                 else:
-                    print(res)
+                    self._log(res)
+                    self._log("ValueError('LLM respond None object')")
                     raise ValueError("LLM respond None object")
             reasoning_process = "/n".join(cur_status)
         elif router_res=='no':
             # Not Scheduling processing
             pass
         else:
-            print(router_res)
+            self._log(router_res)
+            self._log("ValueError('Unknown Scheduling Router Result')")
             raise ValueError("Unknown Scheduling Router Result")
 
             
         # Router IS_MAIL
-        print("<Logic Framework> Is Email ?")
+        _tag = "<Logic Framework> Is Email ?"
+        self._log(_tag)
+        email_priority = None
         sys_prompt = prompt["ROUTER"]["IS_MAIL"]["PROMPT_1"]
         router_res = self.router(sys_prompt, message)
         if router_res=="yes":
@@ -91,24 +110,27 @@ class Agent:
             instruction = sys_prompt.format(
                 message=message
             )
-            res = self.llm.chat(instruction)
+            res = self.llm.chat(instruction).strip().strip("'\"")
+            self._log(f"email priority: {res}")
             priority = ast.literal_eval(res)
-            email_priprity = f"Email_Type: {priority['Type']}, Score: {priority['Score']}"
+            email_priority = f"Email_Type: {priority['Type']}, Score: {priority['Score']}"
         elif router_res=="no":
             # Not Email process
             pass
         else:
-            print(router_res)
+            self._log(router_res)
+            self._log("ValueError('Unknown IS_MAIL Router Result')")
             raise ValueError("Unknown IS_MAIL Router Result")
         
         
         # Final Answer Generation
-        print("********* <Generate Response> *********")
+        _tag = "********* <Generate Response> *********"
+        self._log(_tag)
         final_sys_prompt = prompt["FINAL_ANS"]["PROMPT_TEST"]
         instruction = final_sys_prompt.format(
             today_datetime=today, 
             reasoning = reasoning_process,
-            priority = email_priprity,
+            priority = email_priority,
             message=message
         )
         res = self.llm.chat(instruction)
@@ -136,7 +158,6 @@ class Agent:
         else:
             return "LLM return None"
 
-
     async def list_tools(self):
         """
         List details of all MCP tools
@@ -158,3 +179,30 @@ class Agent:
         async with Client("http://127.0.0.1:8000/mcp") as client:
             result = await client.call_tool(tool, param)
 
+            return result.content[0].text
+
+    def guardrail(self, message):
+        """
+        Dev
+        """
+        # sys_prompt = prompt["Guard1"]
+        instruction = prompt.format(
+            message=message
+        )
+        
+        res = self.llm.chat(instruction)
+        if res:
+            print("Guardrail: ", res)
+            return res.lower().strip().strip("'\"")
+        else:
+            return "LLM return None"
+        
+    def _log(self, msg):
+        """
+        Logged a message to record the process of an agent.
+        Input (str): log message, the msg will be shown in terminal and recorded in log.
+        Return : no return 
+        """
+        print(msg)
+        with open(self.log, "a", encoding="utf-8") as log:
+            print(msg, file=log)
