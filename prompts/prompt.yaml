@@ -123,13 +123,8 @@ PLANNING:
 
     ## Task
       - When scheduling an event (create/delete/revise), you MUST check the calendar first, and get event information.
-      - If the date is not available after you check the calendar, you must reply 'Date Unavailable' as your final answer.
+      - If the date is not available after you check the calendar, you must mention 'Date Unavailable' in your final answer.
       - If the date is available after you check the calendar, you can do the next step (create/delete/revise).
-
-    ## Context
-      Message: {message}
-      Today: {today_datetime}
-      Current Status: {cur_status}
 
     ## Available Tools
       There are tools you may need to get the information or do actions.
@@ -139,12 +134,19 @@ PLANNING:
       - You can do only one step at a time.
       - If tool return error, please return 'Tool Error during Planning' as your final answer.
       - Always format the date with format 'YYYY-MM-DD', some cases you may need datetime.
-      - Your output should be like one of the following example, each of example could be your output at a time, and Cuttrent Status will collect them
-        EX: {{'Thought':'I have to answer the name of R10 MRT station and i have to answer it.'}}
-        EX: {{'Thought':'I have to apply Tool-1 to answer it with parameters id=10, Line=R.'}}
-        EX: {{'Action':'Tool-1', 'param':{{'id':10, 'Line':'R'}}}}  # if no parameter needed, return param:{{}}
-        EX: {{[Observation] Calling Tool-1 with param {{'id':10, 'Line':'R'}}, Got result {{'Taipei Station'}}}}
-        EX: {{'Thought':'#Done#'}}
+      - Your output should be like one of the following example, each of example could be your output at a time, and Current Status will collect them
+        EX: {{"Thought":"I have to answer the name of R10 MRT station and i have to answer it."}}
+        EX: {{"Thought":"I have to apply Tool-1 to answer it with parameters id=10, Line=R."}}
+        EX: {{"Action":"Tool-1", "param":{{"id":10, "Line":"R"}}}}  # if no parameter needed, return param:{{}}
+        EX: {{[Observation] Calling Tool-1 with param {{"id":10, "Line":"R"}}, Got result {{"Taipei Station"}}}}
+        EX: {{"Thought":"#Done#"}}
+      
+      #Note: You MUST output ONLY a valid JSON object. No extra text outside the JSON.
+
+    ## Context
+      Message: {message}
+      Today: {today_datetime}
+      Current Status: {cur_status}
 
 EMAIL_PRIORITY:
   PROMPT_1: |
@@ -194,22 +196,29 @@ FINAL_ANS:
   PROMPT_TEST: |
     ## Task
     You are a helpful assistant. Answer the question in Message based on everything you know.
-    Some reference have been provided below.
+    Chat history & Some references have been provided below.
+
+    ## Chat History
+    This provide the chat history, and your final answer should continue this conversation. 
+    {chat_history}
 
     ## Reference
-    1. Reasoning: This provide the thinking steps and thinking results, it could be reference to your answer.
+    1. Reasoning: This provide the thinking steps and thinking results, it could be reference of to your answer.
         Thought: indicate thinking step.
         Action: indicate tool has been used.
         Observation: indicate result of using a tool.
         #Done#: indicate the END point of thinking chain, ignore it. 
     2. Priority: This shows the types and score of importance of a given message.
 
-    #Note: If the 'Reasoning' or 'Priority' is not empty, it must be describe in final response.
+    #Note: If the 'Priority' is not empty, it must be describe in final response with format 'Email Type:[your-answer], Score:[your-answer]'.
+    #Note: If the 'Reasoning' contains the actions that have been done, it should be briefly describe in final response.
 
     ## Context
     Today: {today_datetime}
     Reasoning: {reasoning}
     Priority: {priority}
     Message: {message}
+    
+    Your Response:
     
   

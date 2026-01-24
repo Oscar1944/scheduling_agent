@@ -5,14 +5,16 @@ import yaml
 import ast
 import asyncio
 import os
+import json
 
 global prompt
 with open("./prompts/prompt.yaml", "r", encoding="utf-8") as f:
     prompt = yaml.safe_load(f)
 
 class Agent:
-    def __init__(self, API_KEY, MODEL, LOG_PATH):
+    def __init__(self, API_KEY, MODEL, LOG_PATH, MAX_MEMO=0):
         self.memory = []
+        self.max_memory = MAX_MEMO
         self.llm = LLM(API_KEY, MODEL)
         self.log = LOG_PATH
 
@@ -42,6 +44,7 @@ class Agent:
         self._log(_tag)
         sys_prompt = prompt["ROUTER"]["SCHEDULING"]["PROMPT_1"]
         router_res = self.router(sys_prompt, message)
+        self._log(router_res)
         if router_res=='yes':
             _tag = "********* <planning> *********"
             self._log(_tag)
@@ -63,7 +66,7 @@ class Agent:
                     tool_list=str(tool_list)
                 )
                 # print(instruction)
-                res = self.llm.chat(instruction)
+                res = self.llm.chat(instruction).strip().strip("'\"")
                 self._log(res)
 
                 if res:
@@ -71,8 +74,9 @@ class Agent:
                         cur_status.append(res)
                         break
                     else:
-                        res = res.strip().splitlines()[-1]
-                        step = ast.literal_eval(res)
+                        res = res.strip().splitlines()[0]
+                        # step = ast.literal_eval(res)  # apply ast to convert str->dict
+                        step = json.loads(res)  # apply json to convert str->dict
                         if "Action" in step.keys():   # Do Action
                             tool_result = asyncio.run(self.call_tool(step["Action"], param=step["param"]))
                             observation = str(f"[Observation] Calling {step['Action']} with param {step['param']}, Got result {tool_result}")
@@ -80,7 +84,6 @@ class Agent:
                             self._log(observation)
                         elif "Thought" in step.keys():   # Thinking
                             cur_status.append(str(step["Thought"]))
-                            self._log(str(step["Thought"]))
                         else:
                             self._log("ValueError('LLM Planning Unknown step')")
                             raise ValueError("LLM Planning Unknown step")
@@ -104,6 +107,7 @@ class Agent:
         email_priority = None
         sys_prompt = prompt["ROUTER"]["IS_MAIL"]["PROMPT_1"]
         router_res = self.router(sys_prompt, message)
+        self._log(router_res)
         if router_res=="yes":
             # Email process
             sys_prompt = prompt["EMAIL_PRIORITY"]["PROMPT_1"]
@@ -128,16 +132,21 @@ class Agent:
         self._log(_tag)
         final_sys_prompt = prompt["FINAL_ANS"]["PROMPT_TEST"]
         instruction = final_sys_prompt.format(
+            chat_history=json.dumps(self.memory, ensure_ascii=False, indent=4),
             today_datetime=today, 
             reasoning = reasoning_process,
             priority = email_priority,
             message=message
         )
         res = self.llm.chat(instruction)
+        self._log(res)
 
         ###
         ### Guardrails
         ###
+
+        # Add current response into chat history
+        self._remember(message, res)
         
         return res
 
@@ -206,3 +215,22 @@ class Agent:
         print(msg)
         with open(self.log, "a", encoding="utf-8") as log:
             print(msg, file=log)
+
+    def _remember(self, message, response):
+        """
+        Add current final response into chat history as part of memory
+        Return : no return 
+        """
+        cur_chat = [
+            {"USER":message},
+            {"Assistant": response}
+        ]
+        self.memory.append(cur_chat)
+
+        if len(self.memory)>self.max_memory:
+            self.memory.pop(0)
+
+
+
+
+

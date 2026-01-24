@@ -10,8 +10,9 @@ if __name__=="__main__":
         config = yaml.safe_load(f)
 
     LOG_PATH = "./logs/"
+    MAX_MEMO = 10
 
-    agent = Agent(config["LLM"]["API_KEY"], config["LLM"]["MODEL"], LOG_PATH=LOG_PATH)
+    agent = Agent(config["LLM"]["API_KEY"], config["LLM"]["MODEL"], LOG_PATH=LOG_PATH, MAX_MEMO=MAX_MEMO)
 
     # Demo: Easy Conversation
     # print("Demo: ", agent.chat('Hurry, tell Mike we gotta go now'))
@@ -29,8 +30,8 @@ if __name__=="__main__":
     "content": "您好，為了結算年度帳務，想跟您預約下個月 2/16（一）早上 10:00 進行年度對帳。需請您抽空參與，再請確認是否方便。"
     }
     new_event_conversation = "5月14號 Oscar 邀請我參加私人聚會，幫我記錄一下"
-    print("Demo: ", agent.chat(str(mail)))
-    print("Demo: ", agent.chat(str(new_event_conversation)))
+    # print("Demo: ", agent.chat(str(mail)))
+    # print("Demo: ", agent.chat(str(new_event_conversation)))
 
     # Demo Delete an event
     mail = {
@@ -53,3 +54,13 @@ if __name__=="__main__":
     revise_event_conversation = "幫我把 Test Event*UPdate* 改成 2/1 上午11:00"
     # print("Demo: ", agent.chat(str(mail)))
     # print("Demo: ", agent.chat(str(revise_event_conversation)))
+
+    # Demo Agent Memory
+    conversation_1 = "what is cancer? (short answer) "
+    conversation_2 = "what may cause this problem? "
+    conversation_3 = "I wanna arrange a health check in hospital, please check my schedule and tell me if 5/16 available for me. "
+    conversation_4 = "Can you make a short summary to conclude our talk"
+    print("Demo: ", agent.chat(str(conversation_1)))
+    print("Demo: ", agent.chat(str(conversation_2)))
+    print("Demo: ", agent.chat(str(conversation_3)))
+    print("Demo: ", agent.chat(str(conversation_4)))
