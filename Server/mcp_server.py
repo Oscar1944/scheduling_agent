@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 import requests
 from datetime import datetime
+import time
 
 # Create a server instance
 mcp = FastMCP(name="MCPServer")
@@ -27,7 +28,7 @@ def save_calendar(calendar: dict):
     with open(CALENDAR_FILE, "w", encoding="utf-8") as f:
         json.dump(calendar, f, ensure_ascii=False, indent=4)
 
-# @mcp.tool
+@mcp.tool
 def multiply(a: float, b: float) -> float:
     """
     Multiplies two numbers by giving 2 real numbers a and b.
@@ -36,7 +37,7 @@ def multiply(a: float, b: float) -> float:
     """
     return a * b
 
-# @mcp.tool()
+@mcp.tool()
 def get_calendar_events():
     """
     Get all of events & date that have been scheduled in calendar.
@@ -45,7 +46,7 @@ def get_calendar_events():
     """
     return json.dumps(load_calendar(), ensure_ascii=False, indent=4)
 
-# @mcp.tool()
+@mcp.tool()
 def add_calendar_event(event: dict):
     """
     Add a new events into calendar.
@@ -69,7 +70,7 @@ def add_calendar_event(event: dict):
 
     return "[Success] Add NEW EVENT"
 
-# @mcp.tool()
+@mcp.tool()
 def delete_calendar_event(datetime: str):
     """
     Delete an events in calendar by giving a string datetime with format 'YYYY-MM-DD'.
@@ -90,7 +91,7 @@ def delete_calendar_event(datetime: str):
 
     return "[Success] Delete an EVENT"
 
-# @mcp.tool()
+@mcp.tool()
 def revise_calendar_event(event: dict, revised_event: dict):
     """
     Revise an events in calendar by giving a modified event.
@@ -126,7 +127,7 @@ def revise_calendar_event(event: dict, revised_event: dict):
 
     return "[Success] Revise an EVENT" 
 
-# @mcp.tool()s
+@mcp.tool()
 def is_date_available(date: str):
     """
     Check if the given date is a holiday, weekend or weekday. The given datetime should be with format 'YYYY-MM-DD'.
@@ -134,17 +135,15 @@ def is_date_available(date: str):
     Return (str): A string to reply it is 'Holiday', 'Weekend' or 'Weekday'.
     """
     # API provided by government of new taipei city (https://data.ntpc.gov.tw/openapi)
-    url = "https://data.ntpc.gov.tw/api/datasets/308dcd75-6434-45bc-a95f-584da4fed251/json?page={page_num}&size={size}"
+    base_url = "https://data.ntpc.gov.tw/api/datasets/308dcd75-6434-45bc-a95f-584da4fed251/json?page={page_num}&size={size}"
     page_num = 10
     size = 100
 
     # Normalize datetime format
     target_dt = datetime.strptime(date, "%Y-%m-%d")  # convert str->datetime obj
-    # target_dt = dt.strftime("%Y%m%d")  # convert format YYYY-MM-DD -> YYYYMMDD (str)
 
     while True:
-        url = url.format(page_num=page_num, size=size)
-        print(url)
+        url = base_url.format(page_num=page_num, size=size)
         holidays = requests.get(url, verify=False).json()   # List[dict], all holidays from new_taipei .gov web
         for holiday in holidays:
             _dt = datetime.strptime(holiday["date"], "%Y%m%d")  # convert str->datetime obj
@@ -160,12 +159,13 @@ def is_date_available(date: str):
         # If target date not in holidays list, keep checking next page.
         page_num+=1
 
+
         
 
 if __name__=="__main__":
     # 啟動 server
     # mcp.run()
-    # mcp.run(transport="http", host="127.0.0.1", port=8000)
+    mcp.run(transport="http", host="127.0.0.1", port=8000)
 
     # dev-test
     # test_event = {"title": "Test Event-1", "start":"2030-01-20", "end":"2030-02-30"}
@@ -188,9 +188,9 @@ if __name__=="__main__":
     # res = revise_calendar_event(target_event, revised_event)
     # print(res)
 
-    # date = "2026-01-20" # weekday
+    # date = "2026-05-16" # weekday
     # date = "2026-02-16" # Holiday
     # date = "2026-02-22" # Weekend
-    res = is_date_available(date)
-    print(res)
+    # res = is_date_available(date)
+    # print(res)
     

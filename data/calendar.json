@@ -28,5 +28,15 @@
         "title": "Oscar Secret Party",
         "start": "2026-05-16T09:00:00",
         "end": "2026-05-16T17:00:00"
+    },
+    {
+        "title": "Client AMC Meeting",
+        "start": "2026-03-03T10:00:00",
+        "end": "2026-03-03T11:00:00"
+    },
+    {
+        "title": "Alex's marriage",
+        "start": "2026-03-09T09:00:00",
+        "end": "2026-03-09T17:00:00"
     }
 ]

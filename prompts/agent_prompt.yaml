@@ -123,8 +123,10 @@ PLANNING:
 
     ## Task
       - When scheduling an event (create/delete/revise), you MUST check the calendar first, and get event information.
-      - If the date is not available after you check the calendar, you must mention 'Date Unavailable' in your final answer.
-      - If the date is available after you check the calendar, you can do the next step (create/delete/revise).
+      - If you just need to acquire event information to answer quetion, checking calendar will help you get information you need.
+      - A date is Not available when it is occupied by other event or the date is a holiday or weenkend, so you MUST check.
+      - If the date is not available after you check it, you must explain reason, and propose another date available.
+      - If the date is an available weekday after you check it, you can do the next step (create/delete/revise).
 
     ## Available Tools
       There are tools you may need to get the information or do actions.
@@ -170,7 +172,9 @@ EMAIL_PRIORITY:
       Input Email:  
           Sender: CEO
           Content: We must change our investment objectives. Let's hold a meeting tomorrow. When would you be available ?
-      Your Anwer: {{'Type':'Emergency', 'Score':5}}
+      Your Anwer: {{"Type":"Emergency", "Score":5}}
+
+      #Note: You MUST output ONLY a line of valid JSON object. No extra text outside the JSON. No seperate line.
 
     ## Email Message
       Message: {message}

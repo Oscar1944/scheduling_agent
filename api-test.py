@@ -12,7 +12,7 @@ print(date(2026,1,20).weekday())
 # Get Gemini-LLM
 from google import genai
 # The client gets the API key from the environment variable `GEMINI_API_KEY`.
-client = genai.Client(api_key="")
+client = genai.Client(api_key="A")
 
 response = client.models.generate_content(
     model="gemini-2.5-flash", contents="Hurry, tell Mike we gotta go now"

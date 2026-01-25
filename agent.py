@@ -1,23 +1,26 @@
-from util import guardrails
-from util import LLM, getToday
+from util import LLM, getToday, Guardrail
 from fastmcp.client import Client
 import yaml
 import ast
 import asyncio
 import os
 import json
+import re
 
 global prompt
-with open("./prompts/prompt.yaml", "r", encoding="utf-8") as f:
+with open("./prompts/agent_prompt.yaml", "r", encoding="utf-8") as f:
     prompt = yaml.safe_load(f)
 
 class Agent:
-    def __init__(self, API_KEY, MODEL, LOG_PATH, MAX_MEMO=0):
+    def __init__(self, MODEL:LLM, LOG_PATH="./", MAX_REASON=3, MAX_MEMO=0, SAFETY=None, MAX_SAFETY_CORRECT=3):
+        self.llm = MODEL
         self.memory = []
         self.max_memory = MAX_MEMO
-        self.llm = LLM(API_KEY, MODEL)
+        self.reasoning_step = MAX_REASON
+        self.guardrail = SAFETY
+        self.max_safety_correct = MAX_SAFETY_CORRECT
         self.log = LOG_PATH
-
+        
         # Create an agent log
         if not os.path.exists(self.log):
             ValueError("Log path not exist.")
@@ -31,6 +34,9 @@ class Agent:
         """
         Send message to Agent
         """
+        _tag = "********* <Input> *********"
+        self._log(_tag)
+        self._log(message)
         _tag = "********* <thinking> *********"
         self._log(_tag)
 
@@ -52,8 +58,7 @@ class Agent:
             tool_list = asyncio.run(self.list_tools())
             cur_status = []
             loop_cnt = 0
-            max_loop = 3
-            while loop_cnt<=max_loop:
+            while loop_cnt<=self.reasoning_step:
                 '''
                 Planning -> Tool-calling -> LLM(continue/break)
                 '''
@@ -65,7 +70,6 @@ class Agent:
                     cur_status=str(cur_status), 
                     tool_list=str(tool_list)
                 )
-                # print(instruction)
                 res = self.llm.chat(instruction).strip().strip("'\"")
                 self._log(res)
 
@@ -116,7 +120,9 @@ class Agent:
             )
             res = self.llm.chat(instruction).strip().strip("'\"")
             self._log(f"email priority: {res}")
-            priority = ast.literal_eval(res)
+            match = re.search(r"\{.*?\}", res, re.DOTALL)
+            # priority = ast.literal_eval(res)  # Apply ast to convert
+            priority = json.loads(match.group(0))  # Apply JSON to convert
             email_priority = f"Email_Type: {priority['Type']}, Score: {priority['Score']}"
         elif router_res=="no":
             # Not Email process
@@ -142,11 +148,21 @@ class Agent:
         self._log(res)
 
         ###
-        ### Guardrails
+        ### Guardrails (post-model-hook + self-reflection + [obj: solve hallucination & safety risk])
         ###
+        if self.guardrail:
+            _tag = "********* <Guardrail> *********"
+            self._log(_tag)
+            res = self._guardrail(
+                conversation=json.dumps(self.memory, ensure_ascii=False, indent=4), 
+                message=res
+                )
+            self._log(res)
 
         # Add current response into chat history
         self._remember(message, res)
+
+        self._log("")
         
         return res
 
@@ -190,21 +206,27 @@ class Agent:
 
             return result.content[0].text
 
-    def guardrail(self, message):
+    def _guardrail(self, conversation, message):
         """
-        Dev
+        This is guardrail for agent. Apply self-reflection(judge-and-drifter) to verfiy & correct given message.
+        Input (str): the given message
+        Return (str): Safe message or 'Cannot respond'
         """
-        # sys_prompt = prompt["Guard1"]
-        instruction = prompt.format(
-            message=message
-        )
-        
-        res = self.llm.chat(instruction)
-        if res:
-            print("Guardrail: ", res)
-            return res.lower().strip().strip("'\"")
-        else:
-            return "LLM return None"
+        correct_cnt = 0
+        feedback = ""
+        while correct_cnt<self.max_safety_correct:
+            res, feedback = self.guardrail.safety_check(conversation=conversation, message=message)
+            self._log(res)
+            self._log(feedback)
+            if res:
+                # Safety Pass
+                return message
+            else:
+                # Safety Fail, Re-write again based on feedback
+                message = self.guardrail.correct(conversation=conversation, message=message, feedback=feedback)
+                self._log(message)
+            correct_cnt+=1
+        return "Cannot respond. The response may violate Safety Policy and cause potential dangers."
         
     def _log(self, msg):
         """
@@ -212,13 +234,16 @@ class Agent:
         Input (str): log message, the msg will be shown in terminal and recorded in log.
         Return : no return 
         """
-        print(msg)
+        print(msg)  # show in the termianl
         with open(self.log, "a", encoding="utf-8") as log:
             print(msg, file=log)
 
     def _remember(self, message, response):
         """
         Add current final response into chat history as part of memory
+        Input:
+            message (str): USER input message
+            response (str): Agent final response
         Return : no return 
         """
         cur_chat = [
