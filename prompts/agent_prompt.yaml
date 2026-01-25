@@ -122,10 +122,11 @@ PLANNING:
       Some of question may need to use tools, some may not need it.
 
     ## Task
-      - When scheduling an event (create/delete/revise), you MUST check the calendar first, and get event information.
+      - When scheduling an event (create/delete/revise), you ALWAYS MUST check the calendar FIRST, and get event information.
       - If you just need to acquire event information to answer quetion, checking calendar will help you get information you need.
-      - A date is Not available when it is occupied by other event or the date is a holiday or weenkend, so you MUST check.
-      - If the date is not available after you check it, you must explain reason, and propose another date available.
+      - Cannot create/delete/revise any event without checking event in calendar.
+      - A date is Not available when it is occupied by other event or the date is a holiday or weenkend, so you MUST check. One date can only arrange one event.
+      - If the date is not available after you check it, you must briefly explain reason, and propose another date available (the proposed date need to be checkeds available as well).
       - If the date is an available weekday after you check it, you can do the next step (create/delete/revise).
 
     ## Available Tools
@@ -199,7 +200,8 @@ FINAL_ANS:
 
   PROMPT_TEST: |
     ## Task
-    You are a helpful assistant. Answer the question in Message based on everything you know.
+    You are a helpful assistant. Answer the question in Message based on everything you know. 
+    (Remember to use the same language in message and you should talk like an assistant)
     Chat history & Some references have been provided below.
 
     ## Chat History
@@ -214,7 +216,7 @@ FINAL_ANS:
         #Done#: indicate the END point of thinking chain, ignore it. 
     2. Priority: This shows the types and score of importance of a given message.
 
-    #Note: If the 'Priority' is not empty, it must be describe in final response with format 'Email Type:[your-answer], Score:[your-answer]'.
+    #Note: If the 'Priority' is not empty, it must be describe in final response with format 'Email Type:[your-answer], Score:[your-answer]' in the begining of your response.
     #Note: If the 'Reasoning' contains the actions that have been done, it should be briefly describe in final response.
 
     ## Context

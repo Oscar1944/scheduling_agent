@@ -25,7 +25,7 @@ class Agent:
         if not os.path.exists(self.log):
             ValueError("Log path not exist.")
         else:
-            self.log = os.path.join(self.log, 'agent_log.txt')
+            self.log = os.path.join(self.log, 'agent_reasoning_log.txt')
         with open(self.log, 'w', encoding='utf-8') as f:
             pass
 
@@ -49,13 +49,13 @@ class Agent:
         _tag = "<Logic Framework> Is about Events ?"
         self._log(_tag)
         sys_prompt = prompt["ROUTER"]["SCHEDULING"]["PROMPT_1"]
-        router_res = self.router(sys_prompt, message)
+        router_res = self._router(sys_prompt, message)
         self._log(router_res)
         if router_res=='yes':
             _tag = "********* <planning> *********"
             self._log(_tag)
             # Scheduling process
-            tool_list = asyncio.run(self.list_tools())
+            tool_list = asyncio.run(self._list_tools())
             cur_status = []
             loop_cnt = 0
             while loop_cnt<=self.reasoning_step:
@@ -82,7 +82,7 @@ class Agent:
                         # step = ast.literal_eval(res)  # apply ast to convert str->dict
                         step = json.loads(res)  # apply json to convert str->dict
                         if "Action" in step.keys():   # Do Action
-                            tool_result = asyncio.run(self.call_tool(step["Action"], param=step["param"]))
+                            tool_result = asyncio.run(self._call_tool(step["Action"], param=step["param"]))
                             observation = str(f"[Observation] Calling {step['Action']} with param {step['param']}, Got result {tool_result}")
                             cur_status.append(observation)
                             self._log(observation)
@@ -96,6 +96,10 @@ class Agent:
                     self._log("ValueError('LLM respond None object')")
                     raise ValueError("LLM respond None object")
             reasoning_process = "/n".join(cur_status)
+            if loop_cnt>self.reasoning_step:
+                self._log("[Reasoning Stop] Achieve MAX Reasoning Step")
+            else:
+                self._log(f"[Reasoning Complete] Complete Reasoning in {loop_cnt-1}/{self.reasoning_step} Step")
         elif router_res=='no':
             # Not Scheduling processing
             pass
@@ -110,7 +114,7 @@ class Agent:
         self._log(_tag)
         email_priority = None
         sys_prompt = prompt["ROUTER"]["IS_MAIL"]["PROMPT_1"]
-        router_res = self.router(sys_prompt, message)
+        router_res = self._router(sys_prompt, message)
         self._log(router_res)
         if router_res=="yes":
             # Email process
@@ -157,21 +161,21 @@ class Agent:
                 conversation=json.dumps(self.memory, ensure_ascii=False, indent=4), 
                 message=res
                 )
-            self._log(res)
-
         # Add current response into chat history
         self._remember(message, res)
-
-        self._log("")
+        
+        self._log(" ")
+        self._log("[Final Answer] "+res)
+        self._log("============== <END> ===============")
+        self._log(" ")
         
         return res
 
-    def router(self, prompt, message):
+    def _router(self, prompt, message):
         """
         A router (LLM) to define the intent of USER by given a message.
         Return (str): Intent
         """
-        # sys_prompt = prompt["ROUTER"]["PROMPT_1"]
         instruction = prompt.format(
             message=message
         )
@@ -183,7 +187,7 @@ class Agent:
         else:
             return "LLM return None"
 
-    async def list_tools(self):
+    async def _list_tools(self):
         """
         List details of all MCP tools
         Return (List[Dict]): tool_name, tool_description, tool_param
@@ -197,7 +201,7 @@ class Agent:
 
             return all_tool_detail        
 
-    async def call_tool(self, tool, param=None):       
+    async def _call_tool(self, tool, param=None):       
         """
         Call a tool and get response through MCP
         """
@@ -216,15 +220,16 @@ class Agent:
         feedback = ""
         while correct_cnt<self.max_safety_correct:
             res, feedback = self.guardrail.safety_check(conversation=conversation, message=message)
-            self._log(res)
-            self._log(feedback)
+            self._log("Guardrail Round: "+str(correct_cnt+1))
+            self._log("Safety: "+str(res))
+            self._log("Safety Feedback: "+str(feedback))
             if res:
                 # Safety Pass
                 return message
             else:
                 # Safety Fail, Re-write again based on feedback
                 message = self.guardrail.correct(conversation=conversation, message=message, feedback=feedback)
-                self._log(message)
+                self._log("Modified Answer: "+message)
             correct_cnt+=1
         return "Cannot respond. The response may violate Safety Policy and cause potential dangers."
         

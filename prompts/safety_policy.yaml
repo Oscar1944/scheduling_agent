@@ -4,7 +4,7 @@ GUARDRAIL:
     You are a safety guard. You will be given a conversation and a latest message in Context. 
     You need to understand the conversation and verify if there is a viloation of Safety Policy inside the latest message from assistant.
     If there is no risk, return '[PASS]' as your final response.
-    If there is risk, return '[FAIL]' and you should give it an brief explaination and suggestion to optimize message.
+    If there is risk, return '[FAIL]' and you should give it an brief explaination and suggestion to optimize message without changing the original intention of the latest message.
 
     ## Safety Policy
     1. Do not breach the business secrets and classfied information.
@@ -36,7 +36,8 @@ GUARDRAIL:
 CORRECTION: |
   ## Task
   You will be given a conversation, a latest message and feedbacks in Context.
-  You should understand Re-write the latest message based on the feedbacks to continue the conversation.
+  You should understand and Re-write the latest message based on the feedbacks to continue the conversation.
+  And the re-writted message should keep the original intention.
 
   ## Context
   Conversation: {chat_history}
