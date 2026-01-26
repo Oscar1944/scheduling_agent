@@ -3,7 +3,7 @@ from pathlib import Path
 import json
 import requests
 from datetime import datetime
-import time
+
 
 # Create a server instance
 mcp = FastMCP(name="MCPServer")
@@ -167,7 +167,7 @@ if __name__=="__main__":
     # mcp.run()
     mcp.run(transport="http", host="127.0.0.1", port=8000)
 
-    # dev-test
+    # Dev-test
     # test_event = {"title": "Test Event-1", "start":"2030-01-20", "end":"2030-02-30"}
     # res = add_calendar_event(test_event)
     # print(res)

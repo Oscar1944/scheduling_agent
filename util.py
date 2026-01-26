@@ -10,6 +10,9 @@ def getToday():
 
 
 class LLM:
+    """
+    LLM class provide LLM services. Accept Gemini API
+    """
     def __init__(self, API_KEY, MODEL):
         self.API_KEY = API_KEY
         self.MODEL = MODEL

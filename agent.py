@@ -100,6 +100,7 @@ class Agent:
                 self._log("[Reasoning Stop] Achieve MAX Reasoning Step")
             else:
                 self._log(f"[Reasoning Complete] Complete Reasoning in {loop_cnt-1}/{self.reasoning_step} Step")
+                
         elif router_res=='no':
             # Not Scheduling processing
             pass
@@ -114,9 +115,9 @@ class Agent:
         self._log(_tag)
         email_priority = None
         sys_prompt = prompt["ROUTER"]["IS_MAIL"]["PROMPT_1"]
-        router_res = self._router(sys_prompt, message)
-        self._log(router_res)
-        if router_res=="yes":
+        mail_router_res = self._router(sys_prompt, message)
+        self._log(mail_router_res)
+        if mail_router_res=="yes":
             # Email process
             sys_prompt = prompt["EMAIL_PRIORITY"]["PROMPT_1"]
             instruction = sys_prompt.format(
@@ -128,11 +129,11 @@ class Agent:
             # priority = ast.literal_eval(res)  # Apply ast to convert
             priority = json.loads(match.group(0))  # Apply JSON to convert
             email_priority = f"Email_Type: {priority['Type']}, Score: {priority['Score']}"
-        elif router_res=="no":
+        elif mail_router_res=="no":
             # Not Email process
             pass
         else:
-            self._log(router_res)
+            self._log(mail_router_res)
             self._log("ValueError('Unknown IS_MAIL Router Result')")
             raise ValueError("Unknown IS_MAIL Router Result")
         
@@ -162,7 +163,7 @@ class Agent:
                 message=res
                 )
         # Add current response into chat history
-        self._remember(message, res)
+        self._remember(message, res, mail_router_res)
         
         self._log(" ")
         self._log("[Final Answer] "+res)
@@ -243,7 +244,7 @@ class Agent:
         with open(self.log, "a", encoding="utf-8") as log:
             print(msg, file=log)
 
-    def _remember(self, message, response):
+    def _remember(self, message, response, mail_router_res):
         """
         Add current final response into chat history as part of memory
         Input:
@@ -251,8 +252,15 @@ class Agent:
             response (str): Agent final response
         Return : no return 
         """
+        msg_giver = ""
+        if mail_router_res=="yes":
+            msg_giver = "MESSAGE"
+        elif mail_router_res=="no":
+            msg_giver = "USER"
+        else:
+            raise ValueError("Unknown Mail Router Result")
         cur_chat = [
-            {"USER":message},
+            {msg_giver: message},
             {"Assistant": response}
         ]
         self.memory.append(cur_chat)

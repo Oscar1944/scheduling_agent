@@ -15,9 +15,9 @@ if __name__=="__main__":
         safety = yaml.safe_load(f)
 
     LOG_PATH = "./logs/"
-    MAX_REASON = 10
+    MAX_REASON = 15
     MAX_MEMO = len(emails)
-    MAX_SAFETY_CORRECT = 3
+    MAX_SAFETY_CORRECT = 5
 
     MODEL = LLM(config["LLM"]["API_KEY"], config["LLM"]["MODEL"])
 
@@ -34,8 +34,8 @@ if __name__=="__main__":
         SAFETY=guardrail, 
         MAX_SAFETY_CORRECT=MAX_SAFETY_CORRECT
         )
-    import sys
-    emails = [emails[-1]]
+    # import sys
+    # emails = [emails[5]]
     # print(emails)
     # sys.exit()
     # Agent procesing Emails & Logged E2E response

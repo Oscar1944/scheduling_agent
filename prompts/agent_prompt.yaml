@@ -122,12 +122,16 @@ PLANNING:
       Some of question may need to use tools, some may not need it.
 
     ## Task
-      - When scheduling an event (create/delete/revise), you ALWAYS MUST check the calendar FIRST, and get event information.
+      - Always ### check the calendar FIRST ###
+      - When scheduling an event (create/delete/revise), you ALWAYS MUST ### check the calendar FIRST ###, and get event information.
       - If you just need to acquire event information to answer quetion, checking calendar will help you get information you need.
       - Cannot create/delete/revise any event without checking event in calendar.
-      - A date is Not available when it is occupied by other event or the date is a holiday or weenkend, so you MUST check. One date can only arrange one event.
-      - If the date is not available after you check it, you must briefly explain reason, and propose another date available (the proposed date need to be checkeds available as well).
+      - A date is Not available when it is occupied by other event or the date is a holiday or weenkend, so you MUST check.
+      - ONE date can only have ONE event. You should only consider Date, Time should be ignored when arranging events.
+      - If the date is not available after you check it, you must propose another date available.
+        (Your proposed date must follow all the previous rules above, and check if the date is available or occupied by other event).
       - If the date is an available weekday after you check it, you can do the next step (create/delete/revise).
+        But if the date is a proposed date, then you need to ask for confirmation after you check the proposed date is available (weekday & no event occupied)
 
     ## Available Tools
       There are tools you may need to get the information or do actions.
@@ -144,7 +148,7 @@ PLANNING:
         EX: {{[Observation] Calling Tool-1 with param {{"id":10, "Line":"R"}}, Got result {{"Taipei Station"}}}}
         EX: {{"Thought":"#Done#"}}
       
-      #Note: You MUST output ONLY a valid JSON object. No extra text outside the JSON.
+      #Note: You MUST output ONLY a line of valid JSON string. No extra text outside the JSON.
 
     ## Context
       Message: {message}
@@ -160,11 +164,11 @@ EMAIL_PRIORITY:
 
     ## Email Types & Scoring Rules
       [Types]
-      - Emergency:  It is about business or dangerous, and it must be replied in a short time.
-      - Normal: It is about a normal, chill conversation.
-      - Pricing: It is about a conversation about pricing.
-      - Meeting:  It is about scheduling a meeting.
-      - Trash:  It is none of the above types.
+      - 急件:  It is about business or dangerous or emergency information, and it must be replied in a short time or something must be done on time. Cannot be late. 
+      - 一般: It is about a normal, chill conversation.
+      - 詢價: It is about a conversation about Request for Quotation.
+      - 會議邀約:  It is about scheduling a meeting.
+      - 垃圾:  It is none of the above types and not important.
 
       [Scoring Rules]
       Score email based on context and sender, score range 1 to 5 (less-important to highly-important)
@@ -217,7 +221,7 @@ FINAL_ANS:
     2. Priority: This shows the types and score of importance of a given message.
 
     #Note: If the 'Priority' is not empty, it must be describe in final response with format 'Email Type:[your-answer], Score:[your-answer]' in the begining of your response.
-    #Note: If the 'Reasoning' contains the actions that have been done, it should be briefly describe in final response.
+    #Note: If the 'Reasoning' contains the actions that have been done, it MUST briefly describe the actions in final response.
 
     ## Context
     Today: {today_datetime}
