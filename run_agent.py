@@ -34,10 +34,7 @@ if __name__=="__main__":
         SAFETY=guardrail, 
         MAX_SAFETY_CORRECT=MAX_SAFETY_CORRECT
         )
-    # import sys
-    # emails = [emails[5]]
-    # print(emails)
-    # sys.exit()
+
     # Agent procesing Emails & Logged E2E response
     E2E_LOG_PATH = "./logs/E2E_log.txt"
     with open(E2E_LOG_PATH, 'w', encoding='utf-8') as f:
@@ -49,3 +46,4 @@ if __name__=="__main__":
             f.write("\n")
             f.write("[Agent Response] "+ res + "\n")
             f.write("==============<END>=============\n")
+
