@@ -15,50 +15,61 @@ An agent to do scheduling &amp; email checking
 ### Input
 - Emails & Natrual Language Conversation probably will be needed in this case.
 
+![image](./png/agent_architecture.png)
+
 ### Schedule_Router
 - A router LLM to decide if the given content (email or conversation) is about scheduling an event.
-  - If **'YES'**, agent start reasoning to deal with event arrangement.
-  - If **'No'**, agent skip reasoning process.
+  - **If 'YES'**, agent start reasoning to deal with event arrangement.
+  - **If 'No'**, agent skip reasoning process.
+
+---
 
 ### Reasoning
 - It is a process of ReAct pattern (Thought->Action->Observation) allowing agent the think and calling necessary tools based on the given content and objective.
 
-  #### (1) Planning
-    - Agent generates *thought* and *Action* based on current status.
+**(1) Planning**
+- Agent generates *thought* and *Action* based on current status.
 
-  #### (2) Tool-Calling
-    - Agent calls tools through MCP with parameters generated from previous planning step.
+**(2) Tool-Calling**
+- Agent calls tools through MCP with parameters generated from previous planning step.
 
-  #### (3) Observation
-    - It is the result after calling a MCP tool.  
-    - The observation will be recorded so that the next round of reasoing will generate output based on the updated current status.
+**(3) Observation**
+- It is the result after calling a MCP tool.  
+- The observation will be recorded so that the next round of reasoing will generate output based on the updated current status.
+
+---
 
 ### Mail_Router
 - A router LLM to decide if the given content is an email.
-  - If **'Yes'**, agent start prioritizing the given email by classifying types of email and scoring the email from 1 to 5.  
-  - If **'No'**, agent skip prioritizing process.
+  - **If 'Yes'**, agent start prioritizing the given email by classifying types of email and scoring the email from 1 to 5.  
+  - **If 'No'**, agent skip prioritizing process.
+
+---
 
 ### Email_Prioritize
 - Define types of email, and score email from 1 to 5 based on the given content.
-    - Type: 急件, 一般, 詢價, 會議邀約, 垃圾  
-    - Score: 1 to 5 (from low to high priority)
+  - **Type**: 急件, 一般, 詢價, 會議邀約, 垃圾  
+  - **Score**: 1 to 5 (from low to high priority)
+
+---
 
 ### Final Answer Generation
 - This is a step to generate agent final response by referring all of previous reults  
   (reasoning, chat_history, message).
 
+---
+
 ### Guardrail
 
-#### Safety_Judge
+**Safety_Judge**
 - The final response will be given, and a LLM will be applied to judge and check if the given content violate safety policies.
-  - If **'Yes'**, Safety_Judge should provide brief explaination and suggestion.  
-  - If **'No'**, The final response will be shown as agent replies.
+  - **If 'Yes'**, Safety_Judge should provide brief explaination and suggestion.  
+  - **If 'No'**, The final response will be shown as agent replies.
 
-#### Re-writter
+**Re-writter**
 - The final response and judge feedback will be given.
 - It's supposed to re-write the given content based on feedback and send the output to Safety_Judge again.
 
-![image](./png/agent_architecture.png)
 
 
 # Getting Start
