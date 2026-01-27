@@ -71,7 +71,6 @@ An agent to do scheduling &amp; email checking
 - It's supposed to re-write the given content based on feedback and send the output to Safety_Judge again.
 
 
-
 # Getting Start
 To run scheduling agent, suggest to use ```python 3.13.10```.
 
