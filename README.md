@@ -5,7 +5,10 @@ An agent for scheduling &amp; email processing
 3. 說明如何啟動程式 & MCP Server，請參考README ```Getting Started```
 4. 演示 Agent 處理 13 封測試郵件的過程，並展現其在面對日期陷阱(國定假日) 時的決策流程，請參考 ``` /logs/agent_reasoning_log (demo).txt ```
 5. 說明如何處理「除夕與週末」的推理判斷邏輯，請參考README ```Overview/Design/External Knowledge (周末/除夕)```
-6. 說明設計 Prompt 或 Workflows 來避免模型幻覺，請參考README ```Overview/Design```
+6. 說明設計 Prompt 或 Workflows 來避免模型幻覺，請參考README ```Overview/Design```  
+    -  Agent 架構，請參考README ``` Overview/Agent Architecture/Structure ```  
+    -  Prompt 實作內容，請參考 ``` /prompts/agent_prompt.yaml ``` 以及 ```safety_policy.yaml``` 
+
 ---
 
 # Getting Started
