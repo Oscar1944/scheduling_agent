@@ -8,7 +8,7 @@ from datetime import datetime
 # Create a server instance
 mcp = FastMCP(name="MCPServer")
 
-CALENDAR_FILE = Path("../data/calendar.json")
+CALENDAR_FILE = Path(__file__).resolve().parent.parent / "data" / "calendar.json"
 
 def load_calendar():
     """
@@ -168,6 +168,9 @@ if __name__=="__main__":
     mcp.run(transport="http", host="127.0.0.1", port=8000)
 
     # Dev-test
+    # res = get_calendar_events()
+    # print(res)
+
     # test_event = {"title": "Test Event-1", "start":"2030-01-20", "end":"2030-02-30"}
     # res = add_calendar_event(test_event)
     # print(res)
